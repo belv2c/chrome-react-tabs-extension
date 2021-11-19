@@ -3,6 +3,7 @@ export type DOMMessage = {
 }
 
 export type DOMMessageResponse = {
+  tabCount: number;
   title: string;
   headlines: string[];
 }
