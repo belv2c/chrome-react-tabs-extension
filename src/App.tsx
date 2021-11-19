@@ -3,8 +3,9 @@ import './App.css';
 import { DOMMessage, DOMMessageResponse } from './types';
 
 function App() {
-  const [title, setTitle] = React.useState('');
-  const [headlines, setHeadlines] = React.useState<string[]>([]);
+  //const [title, setTitle] = React.useState('');
+  //const [headlines, setHeadlines] = React.useState<string[]>([]);
+  const [tabCount, setTabCount] = React.useState(0);
 
   React.useEffect(() => {
     /**
@@ -12,7 +13,7 @@ function App() {
      * For sending messages from React we need to specify which tab to send it to.
      */
     chrome.tabs && chrome.tabs.query({
-      active: true,
+      //active: true,
       currentWindow: true
     }, tabs => {
       /**
@@ -22,14 +23,17 @@ function App() {
        * The runtime.onMessage event is fired in each content script running
        * in the specified tab for the current extension.
        */
-      chrome.tabs.sendMessage(
-        tabs[0].id || 0,
-        { type: 'GET_DOM' } as DOMMessage,
-        (response: DOMMessageResponse) => {
-          console.log(response)
-          setTitle(response.title);
-          setHeadlines(response.headlines);
-        });
+      // eslint-disable-next-line array-callback-return
+      tabs.map((tab) => {
+        chrome.tabs.sendMessage(
+          tab.id || 0,
+          { type: 'GET_DOM' } as DOMMessage,
+          (response: DOMMessageResponse) => {
+            setTabCount(tabs.length > 0 ? tabs.length - 1 : 0);
+            //console.log(tabCount)
+          }
+        )
+      })
     });
   });
 
@@ -39,26 +43,7 @@ function App() {
       <ul>
         <li>
           <div>
-            <span>Title</span>
-            <span className={`${title.length < 30 || title.length > 65 ? 'Error' : 'Ok'}`}>
-              {title.length} Characters
-            </span>
-          </div>
-          <div>
-            {title}
-          </div>
-        </li>
-        <li>
-          <div>
-            <span>Main Heading</span>
-            <span className={`${headlines.length !== 1 ? 'Error' : 'Ok'}`}>
-              {headlines.length}
-            </span>
-          </div>
-          <div>
-            <ul>
-              {headlines.map((headline, index) => (<li key={index}>{headline}</li>))}
-            </ul>
+            <h2>{`You have ${tabCount} tabs open`}</h2>
           </div>
         </li>
       </ul>
